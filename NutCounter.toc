@@ -1,0 +1,21 @@
+## Interface: 30000
+
+## Title: NutCounter
+## Notes: 1, 2... 3?
+## Author: Tekkub Stoutwrithe
+## Version: Alpha
+## X-Website: http://www.tekkub.net/
+## X-Email: tekkub-wow@googlegroups.com
+## X-Category: Misc
+
+## SavedVariables: NutCounterDB
+
+## OptionalDeps: tekDebug, tekErr
+
+## LoadManagers: AddonLoader
+## X-LoadOn-Always: delayed
+
+LibStub.lua
+tekKonfigAboutPanel.lua
+
+NutCounter.lua
