@@ -6,7 +6,7 @@ NutCounter is a basic AH stat addon inspired by Auctioneer's BeanCounter.  It st
 
 Note that due to the way the mailbox returns invoices, items are tracked by name not itemID.
 
-NutCounter also implements the global API <code>GetAuctionBuyout(item)</code>.  This will prefer values provided by other addons that implement <code>GetAuctionBuyout</code> first, if none are given it will return your last price from the item.
+NutCounter also implements the global API @GetAuctionBuyout(item)@.  This will prefer values provided by other addons that implement @GetAuctionBuyout@ first, if none are given it will return your last price from the item.
 
 h2. Links
 
