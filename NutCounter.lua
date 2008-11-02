@@ -108,7 +108,7 @@ local OnTooltipSetItem = function(frame, ...)
 		local min, max, last, sold, failed = db.min[name], db.max[name], db.last[name], db.sold[name], db.failed[name]
 		if min then frame:AddDoubleLine("Previous sales:", max and max ~= min and (GS(min).." - "..GS(max)) or GS(min)) end
 		if last then frame:AddDoubleLine("Last sale:", GS(last)) end
-		if sold or failed then frame:AddDoubleLine("Sellthrough:", string.format("%d%%", (sold or 0)/((sold or 0) + (failed or 0))*100)) end
+		if sold or failed then frame:AddDoubleLine("Sellthrough:", string.format("(%d/%d) %d%%", sold or 0, (sold or 0) + (failed or 0), (sold or 0)/((sold or 0) + (failed or 0))*100)) end
 	end
 
 	if origs[frame] then return origs[frame](frame, ...) end
