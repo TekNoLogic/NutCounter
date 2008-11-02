@@ -1,0 +1,15 @@
+NutCounter is a basic AH stat addon inspired by Auctioneer's BeanCounter.  It strives for low resource use while keeping a few basic stats about your auctions:
+
+* Sellthrough (percent of total auctions posted which were successful)
+* Last sell price
+* Min and max sell price
+
+Note that due to the way the mailbox returns invoices, items are tracked by name not itemID.
+
+NutCounter also implements the global API <code>GetAuctionBuyout(item)</code>.  This will prefer values provided by other addons that implement <code>GetAuctionBuyout</code> first, if none are given it will return your last price from the item.
+
+h2. Links
+
+<b>Visit "my site":http://www.tekkub.net/addons/NutCounter for more info.<br>
+Please report all bugs and feature requests to my "Google Code":http://code.google.com/p/tekkub-wow/issues/list?can=1&q=addon:NutCounter&sort=status+milestone&colspec=ID%20Type%20Status%20Addon%20Milestone%20Summary tracker<br>
+Please direct all feedback and questions to my "Google Groups":http://groups-beta.google.com/group/tekkub-wow mailinglist.</b>
