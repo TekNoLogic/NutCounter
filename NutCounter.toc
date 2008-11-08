@@ -17,6 +17,7 @@
 
 LibStub.lua
 tekKonfigAboutPanel.lua
+tekKonfigButton.lua
 tekIDmemo.lua
 
 NutCounter.lua

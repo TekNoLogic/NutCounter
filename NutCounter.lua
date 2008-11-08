@@ -43,6 +43,68 @@ function f:ADDON_LOADED(event, addon)
 end
 
 
+-----------------------
+--      Buttons      --
+-----------------------
+
+local function GrabItem(i)
+	AutoLootMailItem(i)
+	InboxFrame.openMailID = i
+	OpenMailFrame.updateButtonPositions = true
+	OpenMail_Update()
+	ShowUIPanel(OpenMailFrame)
+	InboxFrame_Update()
+end
+
+
+local nutting, shining
+local function GatherShinies()
+	shining = true
+	for i=1,GetInboxNumItems() do
+		local _, _, _, subject = GetInboxHeaderInfo(i)
+		if subject:match("^Auction successful:") then
+			Debug("Grabbing cash", i, subject)
+			return GrabItem(i)
+		end
+	end
+	shining = false
+	Debug("Done gathering shinies")
+end
+
+local function CollectNuts()
+	nutting = true
+	local free = 0
+	for i=0,4 do free = free + GetContainerNumFreeSlots(i) end
+	if free > 1 then
+		for i=1,GetInboxNumItems() do
+			local _, _, _, subject = GetInboxHeaderInfo(i)
+			if subject:match("^Auction expired:") then
+				Debug("Grabbing nuts", i, subject)
+				return GrabItem(i)
+			end
+		end
+	end
+	nutting = false
+	Debug("Done collecting nuts")
+end
+
+local leftbutt = LibStub("tekKonfig-Button").new(MailFrame, "TOPLEFT", 80, -40)
+leftbutt:SetWidth(55)
+leftbutt:SetText("Shinies")
+leftbutt.tiptext = "Collect successful auctions"
+leftbutt:SetScript("OnClick", GatherShinies)
+
+local rightbutt = LibStub("tekKonfig-Button").new(leftbutt, "LEFT", leftbutt, "RIGHT", 5, 0)
+rightbutt:SetWidth(40)
+rightbutt:SetText("Nuts")
+rightbutt.tiptext = "Collect failed auctions"
+rightbutt:SetScript("OnClick", CollectNuts)
+
+
+-----------------------
+--      Tracker      --
+-----------------------
+
 local lastcount, lastitem, lastprice, cashingout, lastexpire
 
 local orig = AutoLootMailItem
@@ -55,7 +117,9 @@ function AutoLootMailItem(i, ...)
 	return orig(i, ...)
 end
 
+
 function f:MAIL_INBOX_UPDATE()
+	local grabnextshiney, grabnextnut
 	local count = GetInboxNumItems()
 	Debug("MAIL_INBOX_UPDATE", count)
 
@@ -72,6 +136,7 @@ function f:MAIL_INBOX_UPDATE()
 		Debug("Detected expired mail removal", lastexpire)
 		db.failed[lastexpire] = (db.failed[lastexpire] or 0) + 1
 		lastexpire = nil
+		grabnextnut = nutting
 	elseif lastprice and count == lastcount - 1 then
 		Debug("Detected mail removal", lastprice, lastitem)
 		db.min[lastitem] = math.min(lastprice, db.min[lastitem] or math.huge)
@@ -79,9 +144,19 @@ function f:MAIL_INBOX_UPDATE()
 		db.last[lastitem] = lastprice
 		db.sold[lastitem] = (db.sold[lastitem] or 0) + 1
 		lastprice, lastitem = nil
+		grabnextshiney = shining
 	end
 
 	lastcount = count
+
+	if grabnextnut then
+		Debug("Still collecting nuts")
+		return CollectNuts()
+	end
+	if grabnextshiney then
+		Debug("Still gathering shinies")
+		return GatherShinies()
+	end
 end
 
 
