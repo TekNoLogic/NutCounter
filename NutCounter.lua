@@ -88,7 +88,7 @@ local function CollectNuts()
 	Debug("Done collecting nuts")
 end
 
-local leftbutt = LibStub("tekKonfig-Button").new(MailFrame, "TOPLEFT", 80, -40)
+local leftbutt = LibStub("tekKonfig-Button").new(InboxFrame, "TOPLEFT", 80, -40)
 leftbutt:SetWidth(55)
 leftbutt:SetText("Shinies")
 leftbutt.tiptext = "Collect successful auctions"
