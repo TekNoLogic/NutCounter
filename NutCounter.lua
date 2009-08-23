@@ -88,17 +88,17 @@ local function CollectNuts()
 	Debug("Done collecting nuts")
 end
 
-local leftbutt = LibStub("tekKonfig-Button").new(InboxFrame, "TOPLEFT", 80, -40)
-leftbutt:SetWidth(55)
-leftbutt:SetText("Shinies")
-leftbutt.tiptext = "Collect successful auctions"
-leftbutt:SetScript("OnClick", GatherShinies)
+local nutterbutter = LibStub("tekKonfig-Button").new_small(InboxFrame, "TOPRIGHT", -35, -56)
+nutterbutter:SetWidth(30) nutterbutter:SetHeight(18)
+nutterbutter:SetText("Nuts")
+nutterbutter.tiptext = "Collect failed auctions"
+nutterbutter:SetScript("OnClick", CollectNuts)
 
-local rightbutt = LibStub("tekKonfig-Button").new(leftbutt, "LEFT", leftbutt, "RIGHT", 5, 0)
-rightbutt:SetWidth(40)
-rightbutt:SetText("Nuts")
-rightbutt.tiptext = "Collect failed auctions"
-rightbutt:SetScript("OnClick", CollectNuts)
+local shinybutt = LibStub("tekKonfig-Button").new_small(nutterbutter, "TOPRIGHT", nutterbutter, "BOTTOMRIGHT")
+shinybutt:SetWidth(45) shinybutt:SetHeight(18)
+shinybutt:SetText("Shinies")
+shinybutt.tiptext = "Collect successful auctions"
+shinybutt:SetScript("OnClick", GatherShinies)
 
 
 -----------------------
