@@ -88,13 +88,29 @@ local function CollectNuts()
 	Debug("Done collecting nuts")
 end
 
-local nutterbutter = LibStub("tekKonfig-Button").new_small(InboxFrame, "TOPRIGHT", -35, -56)
-nutterbutter:SetWidth(30) nutterbutter:SetHeight(18)
+
+local PADDING = 4
+local bgFrame = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", insets = {left = PADDING, right = PADDING, top = PADDING, bottom = PADDING},
+	tile = true, tileSize = 16, edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16}
+
+local f = CreateFrame("Frame", nil, InboxFrame)
+f:SetPoint("TOP", 0, -32)
+f:SetPoint("RIGHT", 19, 0)
+f:SetWidth(58)
+f:SetHeight(47)
+f:SetFrameLevel(MailFrame:GetFrameLevel()-1)
+
+f:SetBackdrop(bgFrame)
+f:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b)
+f:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
+
+local nutterbutter = LibStub("tekKonfig-Button").new_small(f, "TOPLEFT", 8, -5)
+nutterbutter:SetWidth(45) nutterbutter:SetHeight(18)
 nutterbutter:SetText("Nuts")
 nutterbutter.tiptext = "Collect failed auctions"
 nutterbutter:SetScript("OnClick", CollectNuts)
 
-local shinybutt = LibStub("tekKonfig-Button").new_small(nutterbutter, "TOPRIGHT", nutterbutter, "BOTTOMRIGHT")
+local shinybutt = LibStub("tekKonfig-Button").new_small(nutterbutter, "TOPLEFT", nutterbutter, "BOTTOMLEFT")
 shinybutt:SetWidth(45) shinybutt:SetHeight(18)
 shinybutt:SetText("Shinies")
 shinybutt.tiptext = "Collect successful auctions"
