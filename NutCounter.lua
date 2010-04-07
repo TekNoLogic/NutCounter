@@ -23,6 +23,7 @@ local function Debug(...) if debugf then debugf:AddMessage(string.join(", ", tos
 local f = CreateFrame("frame")
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 f:RegisterEvent("ADDON_LOADED")
+f:Hide()
 
 
 function f:ADDON_LOADED(event, addon)
@@ -37,6 +38,9 @@ function f:ADDON_LOADED(event, addon)
 	LibStub("tekKonfig-AboutPanel").new(nil, "NutCounter")
 
 	self:RegisterEvent("MAIL_INBOX_UPDATE")
+	self:RegisterEvent("MAIL_CLOSED")
+	self:RegisterEvent("PLAYER_LEAVING_WORLD")
+	self:RegisterEvent("UI_ERROR_MESSAGE")
 
 	self:UnregisterEvent("ADDON_LOADED")
 	self.ADDON_LOADED = nil
@@ -88,23 +92,31 @@ local function CollectNuts()
 	Debug("Done collecting nuts")
 end
 
+local alling, mIndex, aIndex, inventoryFull
+local function GrabAll()
+	Debug("Grabbing everything")
+	mIndex = GetInboxNumItems()
+	alling, aIndex, inventoryFull = true
+	f:MAIL_INBOX_UPDATE()
+end
+
 
 local PADDING = 4
 local bgFrame = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", insets = {left = PADDING, right = PADDING, top = PADDING, bottom = PADDING},
 	tile = true, tileSize = 16, edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16}
 
-local f = CreateFrame("Frame", nil, InboxFrame)
-f:SetPoint("TOP", 0, -32)
-f:SetPoint("RIGHT", 19, 0)
-f:SetWidth(58)
-f:SetHeight(47)
-f:SetFrameLevel(MailFrame:GetFrameLevel()-1)
+local back = CreateFrame("Frame", nil, InboxFrame)
+back:SetPoint("TOP", 0, -32)
+back:SetPoint("RIGHT", 18, 0)
+back:SetWidth(58)
+back:SetHeight(75)
+back:SetFrameLevel(MailFrame:GetFrameLevel()-1)
 
-f:SetBackdrop(bgFrame)
-f:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b)
-f:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
+back:SetBackdrop(bgFrame)
+back:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b)
+back:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
 
-local nutterbutter = LibStub("tekKonfig-Button").new_small(f, "TOPLEFT", 8, -5)
+local nutterbutter = LibStub("tekKonfig-Button").new_small(back, "TOPRIGHT", -5, -5)
 nutterbutter:SetWidth(45) nutterbutter:SetHeight(18)
 nutterbutter:SetText("Nuts")
 nutterbutter.tiptext = "Collect failed auctions"
@@ -115,6 +127,13 @@ shinybutt:SetWidth(45) shinybutt:SetHeight(18)
 shinybutt:SetText("Shinies")
 shinybutt.tiptext = "Collect successful auctions"
 shinybutt:SetScript("OnClick", GatherShinies)
+
+
+local everybutt = LibStub("tekKonfig-Button").new_small(shinybutt, "TOPLEFT", shinybutt, "BOTTOMLEFT", 0, -8)
+everybutt:SetWidth(45) shinybutt:SetHeight(18)
+everybutt:SetText("All")
+everybutt.tiptext = "Open all mail.  This will not count auction results!"
+everybutt:SetScript("OnClick", GrabAll)
 
 
 -----------------------
@@ -138,6 +157,9 @@ function f:MAIL_INBOX_UPDATE()
 	local grabnextshiney, grabnextnut
 	local count = GetInboxNumItems()
 	Debug("MAIL_INBOX_UPDATE", count)
+
+	if alling then return f:OpenAll() end
+	if not (shining or nutting) then return end
 
 	if cashingout then
 		local invoiceType, itemName, _, bid, buyout = GetInboxInvoiceInfo(cashingout)
@@ -175,6 +197,43 @@ function f:MAIL_INBOX_UPDATE()
 	end
 end
 
+
+-----------------------------
+--      Open all bits      --
+-----------------------------
+
+local elap
+f:SetScript("OnShow", function(self) elap = 0 end)
+f:SetScript("OnUpdate", function(self, e) elap = elap + e; if elap >= 0.1 then self:Hide() end end)
+f:SetScript("OnHide", function(self) self:MAIL_INBOX_UPDATE() end)
+
+
+function f:MAIL_CLOSED() alling = nil end
+function f:UI_ERROR_MESSAGE(event, msg) if msg == ERR_INV_FULL then inventoryFull = true end end
+f.PLAYER_LEAVING_WORLD = f.MAIL_CLOSED
+
+
+function f:OpenAll()
+	Debug("f:OpenAll()", mIndex, aIndex)
+	local _, _, _, subject, money, cod, _, _, _, _, _, _, isGM = GetInboxHeaderInfo(mIndex)
+	if not subject then alling = nil; return end
+	if not aIndex then Debug("Resetting aIndex"); aIndex = ATTACHMENTS_MAX_RECEIVE end -- new mail, not tried aattachments yet... there can be gaps, so we can't rely on itemCount...
+	while aIndex > 0 and not GetInboxItem(mIndex, aIndex) do aIndex = aIndex - 1 end -- no attachment here, next!
+
+	if aIndex == 0 then -- all attachments passed, try and get the moneys
+		if money > 0 then -- take money
+			Debug("Taking money", mIndex, money)
+			TakeInboxMoney(mIndex)
+			return self:Show()
+		else mIndex, aIndex = mIndex - 1 end -- done with this mail, next!
+	elseif cod == 0 and not inventoryFull and not isGM then -- take item
+		Debug("Taking item", mIndex, aIndex)
+		TakeInboxItem(mIndex, aIndex)
+		return self:Show()
+	else mIndex, aIndex = mIndex - 1 end -- skip this mail
+
+	return self:MAIL_INBOX_UPDATE()
+end
 
 -----------------------------
 --      Tooltip stuff      --
