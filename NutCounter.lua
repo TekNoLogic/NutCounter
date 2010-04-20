@@ -155,7 +155,7 @@ end
 
 function f:MAIL_INBOX_UPDATE()
 	local grabnextshiney, grabnextnut
-	local count = GetInboxNumItems()
+	local _, count = GetInboxNumItems()
 	Debug("MAIL_INBOX_UPDATE", count)
 
 	if alling then return f:OpenAll() end
