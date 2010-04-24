@@ -144,9 +144,9 @@ local lastcount, lastitem, lastprice, cashingout, lastexpire
 
 local orig = AutoLootMailItem
 function AutoLootMailItem(i, ...)
-	Debug("AutoLootMailItem", i, ...)
-
 	local _, _, _, subject = GetInboxHeaderInfo(i)
+	Debug("AutoLootMailItem", subject, i, ...)
+
 	if subject:match("^Auction expired:") then lastexpire = GetInboxItem(i, 1)
 	else cashingout = i end
 	return orig(i, ...)
@@ -156,7 +156,7 @@ end
 function f:MAIL_INBOX_UPDATE()
 	local grabnextshiney, grabnextnut
 	local _, count = GetInboxNumItems()
-	Debug("MAIL_INBOX_UPDATE", count)
+	Debug("MAIL_INBOX_UPDATE", count, alling, shining, nutting, cashingout)
 
 	if alling then return f:OpenAll() end
 	if not (shining or nutting) then return end
