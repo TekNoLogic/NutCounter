@@ -211,6 +211,8 @@ f:SetScript("OnHide", function(self) self:MAIL_INBOX_UPDATE() end)
 function f:MAIL_CLOSED() alling = nil end
 function f:UI_ERROR_MESSAGE(event, msg) if msg == ERR_INV_FULL then inventoryFull = true end end
 f.PLAYER_LEAVING_WORLD = f.MAIL_CLOSED
+-- ERR_MAIL_DATABASE_ERROR = "Internal mail database error.";
+-- ERR_ITEM_NOT_FOUND = "The item was not found.";
 
 
 function f:OpenAll()
