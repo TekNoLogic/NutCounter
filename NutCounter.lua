@@ -147,7 +147,7 @@ function AutoLootMailItem(i, ...)
 	local _, _, _, subject = GetInboxHeaderInfo(i)
 	Debug("AutoLootMailItem", subject, i, ...)
 
-	if subject:match("^Auction expired:") then lastexpire = GetInboxItem(i, 1)
+	if subject:match("^Auction expired:") then lastexpire, cashingout = GetInboxItem(i, 1), nil
 	else cashingout = i end
 	return orig(i, ...)
 end
