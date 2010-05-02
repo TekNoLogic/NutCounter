@@ -1,3 +1,6 @@
+3.3.0.5-Beta
+    Fixed case where manual looting of mail would brea subsequent auto-looting
+
 3.3.0.4-Beta
     Make handling of over-full mailboxes more betterer
     Add majick "open all" from BetterInbox *BIG NOTE* this won't track sale/fail
