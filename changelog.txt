@@ -1,3 +1,6 @@
+3.3.0.6-Beta
+    Fix cases of lag where the looted mail doesn't go away
+
 3.3.0.5-Beta
     Fixed case where manual looting of mail would brea subsequent auto-looting
 
