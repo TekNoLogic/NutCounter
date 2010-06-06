@@ -65,8 +65,8 @@ local nutting, shining
 local function GatherShinies()
 	shining = true
 	for i=1,GetInboxNumItems() do
-		local _, _, _, subject = GetInboxHeaderInfo(i)
-		if subject:match("^Auction successful:") then
+		local _, _, _, subject, money = GetInboxHeaderInfo(i)
+		if subject:match("^Auction successful:") and money > 0 then
 			Debug("Grabbing cash", i, subject)
 			return GrabItem(i)
 		end
@@ -81,8 +81,8 @@ local function CollectNuts()
 	for i=0,4 do free = free + GetContainerNumFreeSlots(i) end
 	if free > 1 then
 		for i=1,GetInboxNumItems() do
-			local _, _, _, subject = GetInboxHeaderInfo(i)
-			if subject:match("^Auction expired:") then
+			local _, _, _, subject, _, _, _, numitems = GetInboxHeaderInfo(i)
+			if subject:match("^Auction expired:") and (numitems or 0) > 0 then
 				Debug("Grabbing nuts", i, subject)
 				return GrabItem(i)
 			end
