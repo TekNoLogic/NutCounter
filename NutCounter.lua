@@ -3,6 +3,7 @@
 --      Locals      --
 ----------------------
 
+local myname, ns = ...
 local db
 
 
@@ -27,7 +28,7 @@ f:Hide()
 
 
 function f:ADDON_LOADED(event, addon)
-	if addon ~= "NutCounter" then return end
+	if addon ~= myname then return end
 
 	local dbkey = GetRealmName().. " ".. UnitFactionGroup("player")
 
