@@ -163,11 +163,11 @@ function f:MAIL_INBOX_UPDATE()
 	if not (shining or nutting) then return end
 
 	if cashingout then
-		local invoiceType, itemName, _, bid, buyout = GetInboxInvoiceInfo(cashingout)
-		Debug("Detected cashout", invoiceType, bid, buyout)
+		local invoiceType, itemName, _, bid, buyout, _, _, moneyDelay, _, _, stack = GetInboxInvoiceInfo(cashingout)
+		Debug("Detected cashout", invoiceType, bid, buyout, moneyDelay, stack)
 		if invoiceType then
 			if invoiceType == "seller" then
-				lastitem, lastprice = itemName, buyout or bid
+				lastitem, lastprice = itemName, (buyout or bid) / (stack or 1)
 			end
 			cashingout = nil
 		end
