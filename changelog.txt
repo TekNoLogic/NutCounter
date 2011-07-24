@@ -1,3 +1,6 @@
+4.2.0.7-Beta
+    Use new stack size return to save *correct* sold item prices
+
 3.3.0.6-Beta
     Fix cases of lag where the looted mail doesn't go away
 
