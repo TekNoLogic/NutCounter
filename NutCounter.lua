@@ -108,7 +108,7 @@ local bgFrame = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", insets =
 
 local back = CreateFrame("Frame", nil, InboxFrame)
 back:SetPoint("TOP", 0, -32)
-back:SetPoint("RIGHT", 18, 0)
+back:SetPoint("RIGHT", 5, 0)
 back:SetWidth(58)
 back:SetHeight(75)
 back:SetFrameLevel(MailFrame:GetFrameLevel()-1)
