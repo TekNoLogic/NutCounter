@@ -62,7 +62,7 @@ local function GrabItem(i)
 end
 
 
-local nutting, shining
+local shining
 local function GatherShinies()
 	shining = true
 	for i=1,GetInboxNumItems() do
@@ -76,6 +76,7 @@ local function GatherShinies()
 	Debug("Done gathering shinies")
 end
 
+local nutting
 local function CollectNuts()
 	nutting = true
 	local free = 0
@@ -93,6 +94,24 @@ local function CollectNuts()
 	Debug("Done collecting nuts")
 end
 
+local winning
+local function CollectWinnings()
+	winning = true
+	local free = 0
+	for i=0,4 do free = free + GetContainerNumFreeSlots(i) end
+	if free > 1 then
+		for i=1,GetInboxNumItems() do
+			local _, _, _, subject, _, _, _, numitems = GetInboxHeaderInfo(i)
+			if subject:match("^Auction won:") and (numitems or 0) > 0 then
+				Debug("Grabbing winnings", i, subject)
+				return GrabItem(i)
+			end
+		end
+	end
+	winning = false
+	Debug("Done collecting winnings")
+end
+
 local alling, mIndex, aIndex, inventoryFull
 local function GrabAll()
 	Debug("Grabbing everything")
@@ -102,15 +121,15 @@ local function GrabAll()
 end
 
 
-local PADDING = 4
+local PADDING, WIDTH = 4, 55
 local bgFrame = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", insets = {left = PADDING, right = PADDING, top = PADDING, bottom = PADDING},
 	tile = true, tileSize = 16, edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16}
 
 local back = CreateFrame("Frame", nil, InboxFrame)
 back:SetPoint("TOP", 0, -32)
-back:SetPoint("RIGHT", 5, 0)
-back:SetWidth(58)
-back:SetHeight(75)
+back:SetPoint("RIGHT", WIDTH - 41, 0)
+back:SetWidth(WIDTH + 12)
+back:SetHeight(94)
 back:SetFrameLevel(MailFrame:GetFrameLevel()-1)
 
 back:SetBackdrop(bgFrame)
@@ -118,20 +137,26 @@ back:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TO
 back:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
 
 local nutterbutter = LibStub("tekKonfig-Button").new_small(back, "TOPRIGHT", -5, -5)
-nutterbutter:SetWidth(45) nutterbutter:SetHeight(18)
+nutterbutter:SetWidth(WIDTH) nutterbutter:SetHeight(18)
 nutterbutter:SetText("Nuts")
 nutterbutter.tiptext = "Collect failed auctions"
 nutterbutter:SetScript("OnClick", CollectNuts)
 
 local shinybutt = LibStub("tekKonfig-Button").new_small(nutterbutter, "TOPLEFT", nutterbutter, "BOTTOMLEFT")
-shinybutt:SetWidth(45) shinybutt:SetHeight(18)
+shinybutt:SetWidth(WIDTH) shinybutt:SetHeight(18)
 shinybutt:SetText("Shinies")
 shinybutt.tiptext = "Collect successful auctions"
 shinybutt:SetScript("OnClick", GatherShinies)
 
+local winningbutt = LibStub("tekKonfig-Button").new_small(shinybutt, "TOPLEFT", shinybutt, "BOTTOMLEFT")
+winningbutt:SetWidth(WIDTH) winningbutt:SetHeight(18)
+winningbutt:SetText("Winnings")
+winningbutt.tiptext = "Collect purchased auctions"
+winningbutt:SetScript("OnClick", CollectWinnings)
 
-local everybutt = LibStub("tekKonfig-Button").new_small(shinybutt, "TOPLEFT", shinybutt, "BOTTOMLEFT", 0, -8)
-everybutt:SetWidth(45) shinybutt:SetHeight(18)
+
+local everybutt = LibStub("tekKonfig-Button").new_small(shinybutt, "TOPLEFT", winningbutt, "BOTTOMLEFT", 0, -8)
+everybutt:SetWidth(WIDTH) shinybutt:SetHeight(18)
 everybutt:SetText("All")
 everybutt.tiptext = "Open all mail.  This will not count auction results!"
 everybutt:SetScript("OnClick", GrabAll)
@@ -141,26 +166,36 @@ everybutt:SetScript("OnClick", GrabAll)
 --      Tracker      --
 -----------------------
 
-local lastcount, lastitem, lastprice, cashingout, lastexpire
+local lastcount, lastitem, lastprice, cashingout, lastexpire, lastwon
 
 local orig = AutoLootMailItem
 function AutoLootMailItem(i, ...)
 	local _, _, _, subject = GetInboxHeaderInfo(i)
 	Debug("AutoLootMailItem", subject, i, ...)
 
-	if subject:match("^Auction expired:") then lastexpire, cashingout = GetInboxItem(i, 1), nil
+	if subject:match("^Auction expired:") then
+		lastexpire = GetInboxItem(i, 1)
+		lastwon, cashingout = nil
+	elseif subject:match("^Auction won:") then
+		lastwon = GetInboxItem(i, 1)
+		lastexpire, cashingout = nil
 	else cashingout = i end
+
 	return orig(i, ...)
 end
 
 
 function f:MAIL_INBOX_UPDATE()
-	local grabnextshiney, grabnextnut
+	local grabnextshiney, grabnextnut, grabnextwinning
 	local _, count = GetInboxNumItems()
-	Debug("MAIL_INBOX_UPDATE", count, alling, shining, nutting, cashingout)
+	Debug("MAIL_INBOX_UPDATE", count, lastcount)
+	Debug("Nutting", nutting, lastexpire)
+	Debug("Winning", winning, lastwon)
+	Debug("Shining", shining, lastprice)
+	Debug("Alling", alling)
 
 	if alling then return f:OpenAll() end
-	if not (shining or nutting) then return end
+	if not (shining or nutting or winning) then return end
 
 	if cashingout then
 		local invoiceType, itemName, _, bid, buyout, _, _, moneyDelay, _, _, stack = GetInboxInvoiceInfo(cashingout)
@@ -176,6 +211,10 @@ function f:MAIL_INBOX_UPDATE()
 		db.failed[lastexpire] = (db.failed[lastexpire] or 0) + 1
 		lastexpire = nil
 		grabnextnut = nutting
+	elseif lastwon and lastcount and count == lastcount - 1 then
+		Debug("Detected winning mail removal", lastwon)
+		lastwon = nil
+		grabnextwinning = winning
 	elseif lastprice and count == lastcount - 1 then
 		Debug("Detected mail removal", lastprice, lastitem)
 		db.min[lastitem] = math.min(lastprice, db.min[lastitem] or math.huge)
@@ -195,6 +234,10 @@ function f:MAIL_INBOX_UPDATE()
 	if grabnextshiney then
 		Debug("Still gathering shinies")
 		return GatherShinies()
+	end
+	if grabnextwinning then
+		Debug("Still winning")
+		return CollectWinnings()
 	end
 end
 
